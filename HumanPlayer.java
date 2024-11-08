@@ -4,6 +4,7 @@ public class HumanPlayer extends Player{
         super(isPlayerOne);
     }
 
+
     @Override
     boolean isHuman() {
         return false;
