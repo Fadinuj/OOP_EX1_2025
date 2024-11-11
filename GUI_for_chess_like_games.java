@@ -312,7 +312,7 @@ public class GUI_for_chess_like_games extends JFrame {
     private void enhanceColor() {
         List<Position> possiblePositions = this.gameLogic.ValidMoves();
         for (Position p : possiblePositions) {
-            JButton button = buttons[p.row()][p.col()];
+            JButton button = buttons[p.getRow()][p.getCol()];
             Color currentColor = button.getBackground();
 
             // Determine if the current color is closer to white or black

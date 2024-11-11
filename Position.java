@@ -1,18 +1,18 @@
 public class Position {
-    int row;
-    int col;
+    private int row;
+    private int col;
 
     public Position(int row, int col) {
         this.row = row;
         this.col = col;
     }
 
-    public int row() {
-        return row;
+    public int getRow() {
+        return this.row;
     }
 
-    public int col() {
-        return col;
+    public int getCol() {
+        return this.col;
     }
 
 }
