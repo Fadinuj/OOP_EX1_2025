@@ -93,6 +93,7 @@ public class GameLogic implements PlayableLogic {
             else {
                 break;
             }
+
         }
         return retunCounter;
     }
