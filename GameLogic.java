@@ -1,22 +1,23 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class GameLogic implements PlayableLogic {
     private final int getBoardSize=8;
     private Player player1,player2;
     private Player lastPlayer;
     private Disc[][] boardDiscs=new Disc[getBoardSize][getBoardSize];
+    private Stack<Move> moveHistory = new Stack<>();
 
 
     public void initBoard()
     {
-        boardDiscs=new Disc[getBoardSize][getBoardSize];
-
-        int middle=getBoardSize/2;
-        boardDiscs[middle][middle]=new SimpleDisc(player1);
-        boardDiscs[middle-1][middle-1]=new SimpleDisc(player1);
-        boardDiscs[middle][middle-1]=new SimpleDisc(player2);
-        boardDiscs[middle-1][middle]=new SimpleDisc(player2);
+        boardDiscs = new Disc[getBoardSize][getBoardSize];
+        int middle = getBoardSize / 2;
+        boardDiscs[middle][middle] = new SimpleDisc(player1);
+        boardDiscs[middle - 1][middle - 1] = new SimpleDisc(player1);
+        boardDiscs[middle][middle - 1] = new SimpleDisc(player2);
+        boardDiscs[middle - 1][middle] = new SimpleDisc(player2);
     }
 
     @Override
@@ -24,15 +25,14 @@ public class GameLogic implements PlayableLogic {
         int row = a.getRow();
         int col = a.getCol();
 
-        // Check if the position is within bounds and the cell is empty
-        if (row >= 0 && row < getBoardSize() && col >= 0 && col < getBoardSize() && boardDiscs[row][col] == null) {
-            boardDiscs[row][col] = disc; // Place the disc at the specified position
-            lastPlayer = disc.getOwner(); // Update lastPlayer to the current disc's owner
-            return true; // Return true to indicate successful placement
+        if (row >= 0 && row < getBoardSize && col >= 0 && col < getBoardSize && boardDiscs[row][col] == null) {
+            // Save the current state before placing the new disc
+            moveHistory.push(new Move(a, disc, boardDiscs[row][col]));
+            boardDiscs[row][col] = disc; // Place the disc on the board
+            lastPlayer = disc.getOwner(); // Update the last player
+            return true;
         }
-
-        return false; // Return false if the position is out of bounds or already occupied
-
+        return false;
     }
     @Override
     public Disc getDiscAtPosition(Position position) {
@@ -56,12 +56,9 @@ public class GameLogic implements PlayableLogic {
                         validMoves.add(new Position(i,j));
                     }
                 }
-
             }
-
         }
         return validMoves;
-
     }
 
 
@@ -79,23 +76,29 @@ public class GameLogic implements PlayableLogic {
         totalFlips+=getCountFlips(a,1,1);   //DOWN-RIGHT
         return totalFlips;
     }
-    public int getCountFlips(Position a,int row,int col)
+    public int getCountFlips(Position a,int rowDelta,int colDelta)
     {
-        int countFlips=0,retunCounter=0;
-        for (int i =a.getCol()+col, j=a.getRow()+row; i <getBoardSize && j>=0 ; i++,j--) {
-            if (boardDiscs[i][j]!=null &&boardDiscs[i][j].getOwner().equals(lastPlayer))
-            {
-                countFlips++;
-            } else if (boardDiscs[i][j]!=null &&boardDiscs[i][j].getOwner().equals()) {
-                retunCounter+=countFlips;
-                break;
-            }
-            else {
-                break;
+        int countFlips = 0;
+        int row = a.getRow() + rowDelta;
+        int col = a.getCol() + colDelta;
+        Player currentPlayer = isFirstPlayerTurn() ? player1 : player2;
+
+        // נמשיך בכיוון כל עוד אנחנו בתוך הגבולות
+        while (row >= 0 && row < getBoardSize() && col >= 0 && col < getBoardSize()) {
+            Disc disc = boardDiscs[row][col];
+
+            if (disc == null) {
+                return 0;  // נתקלנו ברווח, אין הפיכות בכיוון זה
+            } else if (disc.getOwner() == currentPlayer) {
+                return countFlips;  // חזרנו לשחקן הנוכחי, מחזירים את כמות ההפיכות
+            } else {
+                countFlips++;  // דיסק של היריב, ממשיכים לספור
             }
 
+            row += rowDelta;
+            col += colDelta;
         }
-        return retunCounter;
+        return 0;  // לא נמצאה אפשרות הפיכה בכיוון זה
     }
 
     @Override
@@ -131,6 +134,10 @@ public class GameLogic implements PlayableLogic {
 
     @Override
     public void undoLastMove() {
-
+        if (!moveHistory.isEmpty()) {
+            Move lastMove = moveHistory.pop();
+            boardDiscs[lastMove.getPosition().getRow()][lastMove.getPosition().getCol()] = lastMove.getPreviousDisc();
+            lastPlayer = (lastPlayer == player1) ? player2 : player1;
+        }
     }
 }

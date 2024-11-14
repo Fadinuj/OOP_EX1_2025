@@ -40,7 +40,7 @@ public class GUI_for_chess_like_games extends JFrame {
         if (!currentPlayer.isHuman()) {
 
             Move aiMove = ((AIPlayer) currentPlayer).makeMove(gameLogic);
-            preform_move(aiMove.position(), aiMove.disc());
+            preform_move(aiMove.getPosition(), aiMove.getDisc());
 
             // Update the current player after the move
             currentPlayer = gameLogic.isFirstPlayerTurn() ? gameLogic.getFirstPlayer() : gameLogic.getSecondPlayer();
