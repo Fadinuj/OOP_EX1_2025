@@ -1,21 +1,22 @@
 public class BombDisc implements Disc{
 
-    Player owner;
+    private Player player;
+    private boolean fliiped;
+    private boolean bomb=false;
 
     public BombDisc(Player currentPlayer) {
-        this.owner = currentPlayer;
-        owner.reduce_bomb();
+        this.player = currentPlayer;
     }
 
     @Override
-    public Player getOwner() {
-        return owner;
+    public Player getPlayer() {
+        return player;
     }
 
     @Override
-    public void setOwner(Player player)
+    public void setPlayer(Player player)
     {
-        this.owner = player;
+        this.player = player;
     }
 
     @Override
@@ -23,19 +24,30 @@ public class BombDisc implements Disc{
         return "💣";
     }
 
-    public void explode(Disc[][] board, Position position) {
-        int[][] directions = {
-                {-1, 0}, {1, 0}, {0, -1}, {0, 1},
-                {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
-        };
-
-        for (int[] dir : directions) {
-            int newRow = position.getRow() + dir[0];
-            int newCol = position.getCol() + dir[1];
-
-            if (newRow >= 0 && newRow < board.length && newCol >= 0 && newCol < board[0].length) {
-                board[newRow][newCol] = null; // מפנה את התא
-            }
-        }
+    @Override
+    public boolean getFlagBomb() {
+        return bomb;
     }
+
+    @Override
+    public void setFlagBomb(boolean flag) {
+        this.bomb=flag;
+    }
+
+    @Override
+    public void setFliiped(boolean flag) {
+        this.fliiped=flag;
+    }
+
+    @Override
+    public boolean getFliiped() {
+        return fliiped;
+    }
+
+    @Override
+    public void resetFlags() {
+        this.bomb=false;
+        this.fliiped=false;
+    }
+
 }

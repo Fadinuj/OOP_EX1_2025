@@ -1,22 +1,49 @@
 public class UnflippableDisc implements Disc {
-    Player owner;
+    private Player player;
+    private final boolean flipped=false;
+    private boolean bomb=false;
+
+
     public UnflippableDisc(Player currentPlayer) {
-        owner = currentPlayer;
+        player = currentPlayer;
         currentPlayer.reduce_unflippedable();
     }
 
     @Override
-    public Player getOwner() {
-        return owner;
+    public Player getPlayer() {
+        return player;
     }
 
     @Override
-    public void setOwner(Player player) {
-        this.owner = player;
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 
     @Override
     public String getType() {
         return "⭕";
+    }
+
+    @Override
+    public boolean getFlagBomb() {
+        return bomb;
+    }
+
+    @Override
+    public void setFlagBomb(boolean flag) {
+        this.bomb=flag;
+    }
+
+    @Override
+    public void setFliiped(boolean flag) {
+    }
+
+    @Override
+    public boolean getFliiped() {
+        return false;
+    }
+
+    @Override
+    public void resetFlags() {
     }
 }

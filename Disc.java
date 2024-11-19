@@ -9,13 +9,13 @@ public interface Disc {
      *
      * @return The player who is the owner of this game disc.
      */
-    Player getOwner();
+    Player getPlayer();
 
     /**
      * Set the player who owns the Disc.
      *
      */
-    void setOwner(Player player);
+    void setPlayer(Player player);
 
     /**
      * Get the type of the disc.
@@ -25,5 +25,10 @@ public interface Disc {
      * respectively.
      */
     String getType();
+    boolean getFlagBomb();
+    void setFlagBomb(boolean flag);
+    void setFliiped(boolean flag);
+    boolean getFliiped();
+    void resetFlags();
 
 }

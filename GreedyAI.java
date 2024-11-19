@@ -8,16 +8,16 @@ public class GreedyAI extends AIPlayer{
 
     @Override
     public Move makeMove(PlayableLogic gameStatus) {
-        List<Position> validMoves = gameStatus.ValidMoves(); // קבלת רשימת המהלכים החוקיים
+        List<Position> validMoves = gameStatus.ValidMoves();
 
         if (validMoves.isEmpty()) {
-            return null; // אם אין מהלכים חוקיים, נחזיר null
+            return null;
         }
 
         Position bestPosition = null;
         int maxFlips = -1;
 
-        // לולאה שבודקת כל מהלך חוקי כדי למצוא את המהלך שמניב את מקסימום ההפיכות
+
         for (Position position : validMoves) {
             int flips = gameStatus.countFlips(position);
 
@@ -27,12 +27,12 @@ public class GreedyAI extends AIPlayer{
             }
         }
 
-        // אם נמצא מהלך מיטבי, ניצור את הדיסק המתאים ונחזיר אובייקט Move
+
         if (bestPosition != null) {
             Disc disc = new SimpleDisc(this);
             return new Move(bestPosition, disc);
         }
 
-        return null; // במקרה שלא נמצא מהלך כלשהו, נחזיר null
+        return null;
     }
 }
