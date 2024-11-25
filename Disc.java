@@ -9,13 +9,13 @@ public interface Disc {
      *
      * @return The player who is the owner of this game disc.
      */
-    Player getPlayer();
+    Player getOwner();
 
     /**
      * Set the player who owns the Disc.
      *
      */
-    void setPlayer(Player player);
+    void setOwner(Player player);
 
     /**
      * Get the type of the disc.

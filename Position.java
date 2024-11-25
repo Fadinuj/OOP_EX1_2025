@@ -6,6 +6,10 @@ public class Position {
         this.row = row;
         this.col = col;
     }
+    public Position(Position pos) {
+        this.row = pos.row;
+        this.col = pos.col;
+    }
 
     public int getRow() {
         return this.row;

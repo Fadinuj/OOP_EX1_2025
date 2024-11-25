@@ -9,12 +9,12 @@ public class BombDisc implements Disc{
     }
 
     @Override
-    public Player getPlayer() {
+    public Player getOwner() {
         return player;
     }
 
     @Override
-    public void setPlayer(Player player)
+    public void setOwner(Player player)
     {
         this.player = player;
     }
