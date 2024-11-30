@@ -94,11 +94,17 @@ public abstract class Player {
     public void increase_unflippedable(){
         number_of_unflippedable++;
     }
-
+    /**
+     * Reduces the number of unflippable discs available to the player by one.
+     * This method should be called when the player uses an unflippable disc.
+     */
     public void reduce_unflippedable() {
         number_of_unflippedable--;
     }
-
+    /**
+     * Resets the number of bomb and unflippable discs to their initial values.
+     * This method should be called when a new game starts.
+     */
     public void reset_bombs_and_unflippedable() {
         this.number_of_bombs = initial_number_of_bombs;
         this.number_of_unflippedable = initial_number_of_unflippedable;
