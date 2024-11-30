@@ -25,10 +25,15 @@ public interface Disc {
      * respectively.
      */
     String getType();
+
     boolean getFlagBomb();
+
     void setFlagBomb(boolean flag);
+
     void setFliiped(boolean flag);
+
     boolean getFliiped();
+
     void resetFlags();
 
 }

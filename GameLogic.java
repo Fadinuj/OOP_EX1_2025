@@ -530,6 +530,11 @@ public class GameLogic implements PlayableLogic {
             // החזרת המיקום האחרון
             Position lastMove = moveHistory.pop();
             Disc removedDisc = boardDiscs[lastMove.getRow()][lastMove.getCol()];
+            if (removedDisc.getType().equals("💣")) {
+                removedDisc.getOwner().increase_bomb();
+            } else if (removedDisc.getType().equals("⭕")) {
+                removedDisc.getOwner().increase_unflippedable();
+            }
             boardDiscs[lastMove.getRow()][lastMove.getCol()] = null; // מסיר את הדיסק מהמיקום
             System.out.println("Undoing last move:");
             System.out.printf("\tUndo: removing %s from (%d, %d)\n",
@@ -544,9 +549,7 @@ public class GameLogic implements PlayableLogic {
                         Position flippedPos = discsFlipStackerCopy.pop();
                         Disc flippedDisc = boardDiscs[flippedPos.getRow()][flippedPos.getCol()];
                         // משחזר את הבעלות הקודמת
-                        //flippedDisc.setOwner(lastPlayer);
                         flippedDisc.setOwner(getCurrentPlayer());
-
                         System.out.printf("\tUndo: flipping back %s in (%d, %d)\n",
                                 flippedDisc.getType(),
                                 flippedPos.getRow(), flippedPos.getCol());
