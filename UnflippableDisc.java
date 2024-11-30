@@ -6,7 +6,6 @@ public class UnflippableDisc implements Disc {
 
     public UnflippableDisc(Player currentPlayer) {
         player = currentPlayer;
-        currentPlayer.reduce_unflippedable();
     }
 
     @Override

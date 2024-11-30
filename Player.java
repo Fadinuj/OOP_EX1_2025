@@ -77,6 +77,7 @@ public abstract class Player {
      * This method should be called when the player uses a bomb disc.
      */
     public void reduce_bomb() {
+
         number_of_bombs--;
     }
     /**
