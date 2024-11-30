@@ -8,14 +8,16 @@ public class GameLogic implements PlayableLogic {
     private Player lastPlayer;
     private boolean flag;
     private Disc[][] boardDiscs;
-    private Boolean[][] countedArr;
-    private Stack<Position> moveHistory;
-    private Stack<Position> flipPositions1;
+    private final Boolean[][] countedArr;
+    private final Stack<Position> moveHistory;
+    private final Stack<Position> flipPositions1;
     private final Stack<Disc> flipHistory; // Collects data of setOwner.
     private final Stack<Integer> undoCountStack;
     Stack<Position> discsFlipStackerCopy;
 
-
+    /**
+     * Initializes the game logic with an empty board and default states.
+     */
     public GameLogic(){
         super();
         boardDiscs=new Disc[getBoardSize][getBoardSize];
@@ -28,18 +30,28 @@ public class GameLogic implements PlayableLogic {
         this.lastPlayer = getSecondPlayer();
 
     }
+    /**
+     * @return The current player (Player 1 or Player 2) based on the last move.
+     */
     public Player getCurrentPlayer(){
         if (lastPlayer ==player1)
             return player2;
         return player1;
     }
+    /**
+     * @param p The player whose numerical ID is requested.
+     * @return 1 if the player is Player 1, 2 if the player is Player 2.
+     */
     private int getNumOfPlayer(Player p) {
-        if (p.equals(p)) {
+        if (p.equals(player1)) {
             return 1;
         } else {
             return 2;
         }
     }
+    /**
+     * Resets the boolean array tracking flipped positions during gameplay.
+     */
     private void resetCountArr()
     {
         for (int i = 0; i < getBoardSize; i++) {
@@ -49,7 +61,9 @@ public class GameLogic implements PlayableLogic {
 
         }
     }
-
+    /**
+     * Initializes the board with the default starting discs for Player 1 and Player 2.
+     */
     public void initBoard()
     {
         boardDiscs = new Disc[getBoardSize][getBoardSize];
@@ -59,18 +73,13 @@ public class GameLogic implements PlayableLogic {
         boardDiscs[middle][middle - 1] = new SimpleDisc(player2);
         boardDiscs[middle - 1][middle] = new SimpleDisc(player2);
     }
-    private void flagReset() {
-        // נניח שבדיסק יש דגל שנקרא flagBomb, עלינו להחזיר אותו למצב ברירת המחדל שלו
-        for (int i = 0; i < getBoardSize(); i++) {
-            for (int j = 0; j < getBoardSize(); j++) {
-                Disc disc = boardDiscs[i][j];
-                if (disc != null) {
-                    disc.setFlagBomb(false);  // איפוס הדגל לכל הדיסקים על הלוח
-                }
-            }
-        }
-    }
-
+    /**
+     * Attempts to place a disc at the given position on the board.
+     *
+     * @param a The position to place the disc.
+     * @param disc The disc to be placed.
+     * @return True if the move is valid and the disc is placed, otherwise false.
+     */
     @Override
     public boolean locate_disc(Position a, Disc disc) {
         boolean f=false;
@@ -81,7 +90,14 @@ public class GameLogic implements PlayableLogic {
         }
        return f;
     }
-
+    /**
+     * Helper function for locate_disc. Places the given disc at the specified position
+     * and flips the relevant discs.
+     *
+     * @param a The position to place the disc.
+     * @param disc The disc to be placed.
+     * @return True if the move is successful, otherwise false.
+     */
     public boolean locate_disc_v(Position a, Disc disc) {
         Player player = getCurrentPlayer();
 
@@ -93,7 +109,6 @@ public class GameLogic implements PlayableLogic {
                 boardDiscs[a.getRow()][a.getCol()] = disc;
                 moveHistory.addLast(new Position(a.getRow(), a.getCol()));
                 flipDiscs(a, disc.getOwner());
-                //System.out.printf("Player %d placed a %s in (%d,%d)\n No. of Bombs discs left: %d\n", no, disc.getType(), a.row(), a.col(), p1.getNumber_of_bombs());
                 System.out.printf("Player %d placed a %s in (%d,%d)\n", getNumOfPlayer(player), disc.getType(), a.getRow(), a.getCol());
                 System.out.println();
                 lastPlayer = player;
@@ -105,7 +120,6 @@ public class GameLogic implements PlayableLogic {
                 boardDiscs[a.getRow()][a.getCol()] = disc;
                 moveHistory.addLast(new Position(a.getRow(), a.getCol()));
                 flipDiscs(a, disc.getOwner());
-                //System.out.printf("Player %d placed a %s in (%d,%d)" + "\n No. of Unflippable discs left: %d\n", no, disc.getType(), a.row(), a.col(), p1.getNumber_of_unflippedable());
                 System.out.printf("Player %d placed a %s in (%d,%d)" + "\n ", getNumOfPlayer(player), disc.getType(), a.getRow(), a.getCol());
                 System.out.println();
                 lastPlayer = player;
@@ -123,7 +137,12 @@ public class GameLogic implements PlayableLogic {
         }
         return false;
     }
-
+    /**
+     * Flips the discs in all directions based on the rules of the game.
+     *
+     * @param a The position where the last disc was placed.
+     * @param currentPlayer The current player performing the flip.
+     */
     public void flipDiscs(Position a, Player currentPlayer) {
 
         int undoCount = 0;
@@ -159,10 +178,6 @@ public class GameLogic implements PlayableLogic {
                     }
                     // אם הדיסק שייך לשחקן הנוכחי, כל הדיסקים שהיו במסלול צריכים להתהפך
                     else if (disc != null && disc.getOwner().equals(currentPlayer)) {
-                        if (disc.getType().equals("💣"))
-                        {
-                            discsFlipStackerCheck= flipBomb(row , col , discsFlipStackerCheck);
-                        }
                         while (!discsFlipStackerCheck.isEmpty()) {
                             Position pos = discsFlipStackerCheck.pop();
                             Disc d = boardDiscs[pos.getRow()][pos.getCol()];
@@ -190,7 +205,45 @@ public class GameLogic implements PlayableLogic {
         undoCountStack.add(undoCount); // הוסף את מספר ההפיכות למחסנית ההפיכות
         flag = false; // סיום ההפיכה
     }
+    /**
+     * Handles flipping discs caused by a bomb placed on the board.
+     *
+     * @param row The row of the bomb.
+     * @param col The column of the bomb.
+     * @param discsFlipStackerCheck A stack tracking the positions of discs to flip.
+     * @return The updated stack containing all positions of discs to flip.
+     */
     public Stack<Position> flipBomb(int row , int col ,Stack<Position> discsFlipStackerCheck ) {
+        discsFlipStackerCheck.push(new Position(row, col));
+        for (int i = -1; i <=1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (isWithinBoardBounds(row+i, col+j)) {
+                    Disc disc2 = boardDiscs[row+i][col+j];
+                    if(disc2 != null && disc2.getOwner().equals(lastPlayer) && !disc2.getType().equals("⭕"))
+                    {
+                        if (disc2.getType().equals("💣"))
+                        {
+                           discsFlipStackerCheck= flipBombDouble(row+i, col+j, discsFlipStackerCheck);
+                        }
+                        else {
+                        discsFlipStackerCheck.push(new Position(row+i, col+j));
+                        }
+                    }
+                }
+            }
+
+        }
+        return discsFlipStackerCheck;
+    }
+    /**
+     * Helper function to handle recursive bomb explosions caused by another bomb.
+     *
+     * @param row The row of the secondary bomb.
+     * @param col The column of the secondary bomb.
+     * @param discsFlipStackerCheck A stack tracking positions of discs affected by the explosions.
+     * @return The updated stack containing positions of affected discs.
+     */
+    public Stack<Position> flipBombDouble(int row , int col ,Stack<Position> discsFlipStackerCheck ) {
         discsFlipStackerCheck.push(new Position(row, col));
         for (int i = -1; i <=1; i++) {
             for (int j = -1; j <= 1; j++) {
@@ -206,18 +259,26 @@ public class GameLogic implements PlayableLogic {
         }
         return discsFlipStackerCheck;
     }
-
-
+    /**
+     * @param position The position on the board.
+     * @return The disc located at the specified position.
+     */
     @Override
     public Disc getDiscAtPosition(Position position) {
         return boardDiscs[position.getRow()][position.getCol()];
     }
-
+    /**
+     * @return The size of the board.
+     */
     @Override
     public int getBoardSize() {
         return getBoardSize;
     }
-
+    /**
+     * Finds all valid positions where the current player can place a disc.
+     *
+     * @return A list of valid positions for the current move.
+     */
     @Override
     public List<Position> ValidMoves() {
         List<Position> validMoves = new ArrayList<>();
@@ -232,9 +293,12 @@ public class GameLogic implements PlayableLogic {
         }
         return validMoves;
     }
-
-
-
+    /**
+     * Counts the total number of discs that would be flipped if a disc were placed at the given position.
+     *
+     * @param a The position to evaluate.
+     * @return The number of discs that would be flipped.
+     */
     @Override
     public int countFlips(Position a) {
         int totalFlips = 0;
@@ -246,35 +310,50 @@ public class GameLogic implements PlayableLogic {
         totalFlips += getCountFlips(a, -1, -1);   // UP-LEFT
         totalFlips += getCountFlips(a, 1, -1);    // DOWN-LEFT
         totalFlips += getCountFlips(a, 1, 1);     // DOWN-RIGHT
+        resetCountArr();
         return totalFlips;
     }
+    /**
+     * Helper function to count discs to flip in a specific direction.
+     *
+     * @param a The position to evaluate.
+     * @param rowDelta The row direction to check.
+     * @param colDelta The column direction to check.
+     * @return The number of discs to flip in the specified direction.
+     */
     public int getCountFlips(Position a,int rowDelta,int colDelta)
     {
         int flipCounter = 0; // מונה את כמות ההפיכות
-        List<Position> validFlips = new ArrayList<>();
+        ArrayList<Position> validFlips = new ArrayList<>();
         Stack<Position> flipPositionStack = new Stack<>();
         int row = a.getRow() + rowDelta;
         int col = a.getCol() + colDelta;
-
         // סריקה בכיוון הנתון כל עוד אנחנו בתוך גבולות הלוח
         while (isWithinBoardBounds(row, col)) {
             Disc disc = boardDiscs[row][col];
 
+            // אם נתקלנו בריבוע ריק, אין אפשרות להפוך בכיוון זה
             if (disc == null) {
-                // אם נתקלנו בריבוע ריק, אין אפשרות להפוך בכיוון זה
                 flipCounter=0;
+                while (!validFlips.isEmpty()) {
+                    Position position = validFlips.removeFirst();
+                    countedArr[position.getRow()][position.getCol()]=false;
+                }
                 break;
             }
 
-            if (disc.getOwner().equals(lastPlayer)) {
+            if (disc.getOwner()==lastPlayer ) {
+                if (!(isWithinBoardBounds(row+rowDelta, col+colDelta)))
+                {
+                    return 0;
+                }
                 // אם הדיסק שייך לשחקן היריב
-                if (disc.getType().equals("💣")) {
+                if (disc.getType().equals("💣") && !countedArr[row][col]) {
                     validFlips.add(new Position(row, col));
                     countedArr[row][col]=true;
                     // טיפול בפיצוץ
-                    //flipCounter+= handleExplosion(new Position(row,col),validFlips);
                     validFlips = handleExplosion(new Position(row,col),validFlips);
-                    flipCounter+=validFlips.size();
+                    flipCounter =validFlips.size();
                     for (int i = 0; i < getBoardSize; i++) {
                         for (int j = 0; j < getBoardSize; j++) {
                             if(boardDiscs[i][j] != null) {
@@ -285,29 +364,23 @@ public class GameLogic implements PlayableLogic {
 
                 }
                 else if (disc.getType().equals("⬤")) {
-                    System.out.println(validFlips.size() + "get");
-
                     // אם מדובר בדיסק רגיל
-                    if (!validFlips.contains(new Position(row, col)) && countedArr[row][col]==false) {
+                    if (!validFlips.contains(new Position(row, col)) && !countedArr[row][col]) {
                         validFlips.add(new Position(row, col));
                         countedArr[row][col]=true;
-                        System.out.println(validFlips.size() + "get1");
                     }
-                    flipPositionStack.add(new Position(row,col));
+                    if (!flipPositionStack.contains(new Position(row, col))) {
+                        flipPositionStack.push(new Position(row,col));
+                    }
                 }
-            } else if (disc.getOwner().equals(getCurrentPlayer())) {
-                if (disc.getType().equals("💣")) {
-                    validFlips = handleExplosion(new Position(row,col),validFlips);
-                }
-                // אם מצאנו דיסק ששייך לשחקן הנוכחי
-                flipCounter = validFlips.size();
-                resetCountArr();
-               return flipCounter;
+            } else if (disc.getOwner()==getCurrentPlayer()) {
+                    flipCounter = validFlips.size();
+                    validFlips.clear();
+                    return flipCounter;
             } else {
                 // אם נתקלנו בדיסק שאינו הפיך (UnflippableDisc)
                 break;
             }
-
             // המשך לסרוק בכיוון הנתון
             row += rowDelta;
             col += colDelta;
@@ -315,14 +388,17 @@ public class GameLogic implements PlayableLogic {
         while (!flipPositionStack.isEmpty()) {
             flipPositions1.push(flipPositionStack.pop());
         }
-        resetCountArr();
         return flipCounter;
     }
-
-
-    public List<Position> handleExplosion(Position a, List<Position> validFlips) {
-        int flipCounter = 0;
-
+    /**
+     * Handles the explosion caused by a bomb disc. Flips the affected discs and propagates the explosion
+     * to nearby discs, including bombs that trigger further explosions.
+     *
+     * @param a The position of the bomb that triggered the explosion.
+     * @param validFlips A list of positions that represent the discs to be flipped as a result of the explosion.
+     * @return The updated list of positions representing all affected discs, including further bomb explosions.
+     */
+    public ArrayList<Position> handleExplosion(Position a, ArrayList<Position> validFlips) {
         int[][] directions = {
                 {-1, 0}, {1, 0}, {0, 1}, {0, -1}, // Up, Down, Right, Left
                 {-1, -1}, {-1, 1}, {1, -1}, {1, 1} // Diagonal directions
@@ -338,35 +414,33 @@ public class GameLogic implements PlayableLogic {
 
             if (isWithinBoardBounds(newRow, newCol) && !(boardDiscs[newRow][newCol] == null) && !boardDiscs[newRow][newCol].getFlagBomb()) {
                 Disc currentDisc = boardDiscs[newRow][newCol];
-                if(boardDiscs[newRow][newCol].getType().equals("💣")){
-                    // Adds the bomb to the list and starting recursion
-                    if (!validFlips.contains(new Position(newRow, newCol)) && countedArr[newRow][newCol]==false) {
+                if(boardDiscs[newRow][newCol].getType().equals("💣") && boardDiscs[newRow][newCol].getOwner()==lastPlayer) {
+                    if (!validFlips.contains(new Position(newRow, newCol)) && !countedArr[newRow][newCol]) {
                         validFlips.add(new Position(newRow, newCol));
                         countedArr[newRow][newCol]=true;
                         boardDiscs[newRow][newCol].setFlagBomb(true);
                         validFlips = handleExplosion(new Position(newRow, newCol), validFlips);
-
                     }
                 }
                 // אם הדיסק של היריב, ניתן להפוך אותו
                 else if (boardDiscs[newRow][newCol].getOwner().equals(lastPlayer) && boardDiscs[newRow][newCol].getType().equals("⬤")) {
-                    //Position flipPosition = new Position(newRow, newCol);
-                    if (!validFlips.contains(new Position(newRow, newCol)) && countedArr[newRow][newCol]==false) {
+                    if (!validFlips.contains(new Position(newRow, newCol)) && !countedArr[newRow][newCol]) {
                         validFlips.add(new Position(newRow, newCol));
                         countedArr[newRow][newCol]=true;
                         currentDisc.setFlagBomb(true);
-                        //flipCounter++; // הוספת הפתיחה הנכונה
                     }
                 }
             }
         }
-        //flipCounter+= validFlips.size();
-        System.out.println(validFlips.size());
-
         return validFlips; // מחזיר את מספר ההפיכות מהפיצוץ
     }
-
-
+    /**
+     * Checks if the given row and column are within the board's bounds.
+     *
+     * @param row The row index.
+     * @param col The column index.
+     * @return True if the position is within bounds, otherwise false.
+     */
     private boolean isWithinBoardBounds(int row, int col) {
         return (row >= 0 && row < getBoardSize() && col >= 0 && col < getBoardSize());
     }
@@ -391,75 +465,52 @@ public class GameLogic implements PlayableLogic {
     public boolean isFirstPlayerTurn() {
         return lastPlayer != player1;
     }
-
-    private int countDiscs(Player player) {
-        int count = 0;
-        for (int row = 0; row < getBoardSize(); row++) {
-            for (int col = 0; col < getBoardSize(); col++) {
-                Disc disc = boardDiscs[row][col];
-                if (disc != null && disc.getOwner() == player) {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
-
-
-
-    private void updateWins() {
-        int player1Count = countDiscs(player1);
-        int player2Count = countDiscs(player2);
-
-        if (player1Count > player2Count) {
-            player1.addWin(); 
-            System.out.printf("Player 1 wins with %d discs! Player 2 had %d discs.%n", player1Count, player2Count);
-        } else if (player2Count > player1Count) {
-            player2.addWin(); 
-            System.out.printf("Player 2 wins with %d discs! Player 1 had %d discs.%n", player2Count, player1Count);
-        } else {
-            System.out.printf("It's a tie! Both players have %d discs.%n", player1Count);
-        }
-    }
-
+    /**
+     * Checks if the game has ended and determines the winner or if the game is a tie.
+     *
+     * @return True if the game is finished, otherwise false.
+     */
     @Override
     public boolean isGameFinished() {
-        // שמירת השחקן הנוכחי באופן זמני
-        Player currentPlayerTemp = lastPlayer;
+        int player1_discs = 0, player2_discs = 0;
 
-        // בדיקה אם יש מהלכים חוקיים לשחקן הראשון
-        lastPlayer = player2; // הפיכת `lastPlayer` כך שיתייחס ל-player1
-        boolean player1HasMoves = !ValidMoves().isEmpty();
-
-        // בדיקה אם יש מהלכים חוקיים לשחקן השני
-        lastPlayer = player1; // הפיכת `lastPlayer` כך שיתייחס ל-player2
-        boolean player2HasMoves = !ValidMoves().isEmpty();
-
-        // שיחזור `lastPlayer` לשחקן האחרון שהיה
-        lastPlayer = currentPlayerTemp;
-
-        // אם אין מהלכים חוקיים לשני השחקנים או אם הלוח מלא
-        if ((!player1HasMoves && !player2HasMoves) || isBoardFull()) {
-            updateWins(); // מחשב את הניקוד ומעדכן את המנצח
-            return true;  // המשחק הסתיים
-        }
-
-        return false; // המשחק עדיין לא הסתיים
-    }
-    private boolean isBoardFull() {
-        // מעבר על כל התאים בלוח
-        for (int row = 0; row < getBoardSize; row++) {
-            for (int col = 0; col < getBoardSize; col++) {
-                // בדיקה אם התא ריק
-                if (boardDiscs[row][col] == null) {
-                    return false; // נמצא תא ריק בלוח
+        // בדיקה אם אין מהלכים חוקיים זמינים
+        if (this.ValidMoves().isEmpty()) {
+            // ספירת הדיסקים של כל שחקן
+            for (int i = 0; i < getBoardSize; i++) {
+                for (int j = 0; j < getBoardSize; j++) {
+                    if (boardDiscs[i][j] != null && boardDiscs[i][j].getOwner().equals(player1)) {
+                        player1_discs++;
+                    } else if (boardDiscs[i][j] != null && boardDiscs[i][j].getOwner().equals(player2)) {
+                        player2_discs++;
+                    }
                 }
             }
+
+            // עדכון מנצח או טיפול במצב תיקו
+            if (player1_discs > player2_discs) {
+                getFirstPlayer().addWin();
+                System.out.printf("Player %s wins with %d discs! Player %s had %d discs.\n",
+                        getNumOfPlayer(player1), player1_discs,
+                        getNumOfPlayer(player2), player2_discs);
+            } else if (player1_discs < player2_discs) {
+                getSecondPlayer().addWin();
+                System.out.printf("Player %s wins with %d discs! Player %s had %d discs.\n",
+                        getNumOfPlayer(player2), player2_discs,
+                        getNumOfPlayer(player1), player1_discs);
+            } else {
+                // במצב של תיקו, לא מוסיפים ניצחונות ומבצעים איפוס
+                System.out.printf("It's a tie! Both players have %d discs.\n", player1_discs);
+                reset(); // איפוס המשחק
+            }
+            return true; // המשחק הסתיים
         }
-        return true; // כל התאים בלוח מלאים
+
+        return false; // המשחק לא הסתיים
     }
-
-
+    /**
+     * Resets the game state to its initial configuration.
+     */
     @Override
     public void reset() {
         lastPlayer=player2;
@@ -470,7 +521,9 @@ public class GameLogic implements PlayableLogic {
         player2.reset_bombs_and_unflippedable();
         initBoard();
     }
-
+    /**
+     * Undoes the last move, including reverting any discs that were flipped.
+     */
     @Override
     public void undoLastMove() {
         if (!moveHistory.isEmpty()) {
@@ -478,8 +531,8 @@ public class GameLogic implements PlayableLogic {
             Position lastMove = moveHistory.pop();
             Disc removedDisc = boardDiscs[lastMove.getRow()][lastMove.getCol()];
             boardDiscs[lastMove.getRow()][lastMove.getCol()] = null; // מסיר את הדיסק מהמיקום
-
-            System.out.printf("Undo: removed %s from (%d, %d)\n",
+            System.out.println("Undoing last move:");
+            System.out.printf("\tUndo: removing %s from (%d, %d)\n",
                     removedDisc.getType(),
                     lastMove.getRow(), lastMove.getCol());
 
@@ -494,16 +547,18 @@ public class GameLogic implements PlayableLogic {
                         //flippedDisc.setOwner(lastPlayer);
                         flippedDisc.setOwner(getCurrentPlayer());
 
-                        System.out.printf("Undo: flipped back %s in (%d, %d)\n",
+                        System.out.printf("\tUndo: flipping back %s in (%d, %d)\n",
                                 flippedDisc.getType(),
                                 flippedPos.getRow(), flippedPos.getCol());
+                        System.out.println();
                     }
                 }
             }
             lastPlayer = (lastPlayer == player1) ? player2 : player1;
         } else {
-            System.out.println("No moves to undo!");
+            System.out.println("Undoing last move:");
+            System.out.println("\tNo previous move available to undo.");
+            System.out.println();
         }
     }
-
 }
