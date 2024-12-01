@@ -38,7 +38,7 @@ public class Move {
      *
      * @return A {Position} object representing the position of the move.
      */
-    public Position getPosition() {
+    public Position position() {
         return position;
     }
 
@@ -47,7 +47,7 @@ public class Move {
      *
      * @return A {Disc} object representing the disc being placed.
      */
-    public Disc getDisc() {
+    public Disc disc() {
         return disc;
     }
 

@@ -83,7 +83,7 @@ public class GameLogic implements PlayableLogic {
     @Override
     public boolean locate_disc(Position a, Disc disc) {
         boolean f=false;
-       if (boardDiscs[a.getRow()][a.getCol()] == null && countFlips(a) > 0)
+       if (boardDiscs[a.row()][a.col()] == null && countFlips(a) > 0)
         {
             flag=true;
             f = locate_disc_v(a, disc);
@@ -106,10 +106,10 @@ public class GameLogic implements PlayableLogic {
         {
             if (player.getNumber_of_bombs() > 0) {
                 player.reduce_bomb();
-                boardDiscs[a.getRow()][a.getCol()] = disc;
-                moveHistory.addLast(new Position(a.getRow(), a.getCol()));
+                boardDiscs[a.row()][a.col()] = disc;
+                moveHistory.addLast(new Position(a.row(), a.col()));
                 flipDiscs(a, disc.getOwner());
-                System.out.printf("Player %d placed a %s in (%d,%d)\n", getNumOfPlayer(player), disc.getType(), a.getRow(), a.getCol());
+                System.out.printf("Player %d placed a %s in (%d,%d)\n", getNumOfPlayer(player), disc.getType(), a.row(), a.col());
                 System.out.println();
                 lastPlayer = player;
                 return true;
@@ -117,20 +117,20 @@ public class GameLogic implements PlayableLogic {
         } else if (disc.getType().equals( "⭕")) {
             if (player.getNumber_of_unflippedable() > 0) {
                 player.reduce_unflippedable();
-                boardDiscs[a.getRow()][a.getCol()] = disc;
-                moveHistory.addLast(new Position(a.getRow(), a.getCol()));
+                boardDiscs[a.row()][a.col()] = disc;
+                moveHistory.addLast(new Position(a.row(), a.col()));
                 flipDiscs(a, disc.getOwner());
-                System.out.printf("Player %d placed a %s in (%d,%d)" + "\n ", getNumOfPlayer(player), disc.getType(), a.getRow(), a.getCol());
+                System.out.printf("Player %d placed a %s in (%d,%d)" + "\n ", getNumOfPlayer(player), disc.getType(), a.row(), a.col());
                 System.out.println();
                 lastPlayer = player;
                 return true;
             }
 
         } else if (disc.getType().equals("⬤")) {
-            boardDiscs[a.getRow()][a.getCol()] = disc;
-            moveHistory.addLast(new Position(a.getRow(), a.getCol()));
+            boardDiscs[a.row()][a.col()] = disc;
+            moveHistory.addLast(new Position(a.row(), a.col()));
             flipDiscs(a, disc.getOwner());
-            System.out.printf("Player %d placed a %s in (%d,%d)\n", getNumOfPlayer(player), disc.getType(), a.getRow(), a.getCol());
+            System.out.printf("Player %d placed a %s in (%d,%d)\n", getNumOfPlayer(player), disc.getType(), a.row(), a.col());
             System.out.println();
             lastPlayer = player;
             return true;
@@ -163,8 +163,8 @@ public class GameLogic implements PlayableLogic {
             // אם יש דיסקים שיכולים להתהפך בכיוון הזה
             if (getCountFlips(a, rowDelta, colDelta) > 0) {
                 // התחלת סריקה בכיוון הזה
-                int row = a.getRow() + rowDelta;
-                int col = a.getCol() + colDelta;
+                int row = a.row() + rowDelta;
+                int col = a.col() + colDelta;
 
                 while (isWithinBoardBounds(row, col)) {
                     Disc disc = boardDiscs[row][col];
@@ -180,10 +180,10 @@ public class GameLogic implements PlayableLogic {
                     else if (disc != null && disc.getOwner().equals(currentPlayer)) {
                         while (!discsFlipStackerCheck.isEmpty()) {
                             Position pos = discsFlipStackerCheck.pop();
-                            Disc d = boardDiscs[pos.getRow()][pos.getCol()];
+                            Disc d = boardDiscs[pos.row()][pos.col()];
                             d.setOwner(currentPlayer);  // הופך את בעלות הדיסק
                             d.setFliiped(true); // מסמן שהדיסק הפך
-                            System.out.printf("Player %s flipped the %s in (%d,%d)\n",getNumOfPlayer(currentPlayer) , d.getType(), pos.getRow(), pos.getCol());
+                            System.out.printf("Player %s flipped the %s in (%d,%d)\n",getNumOfPlayer(currentPlayer) , d.getType(), pos.row(), pos.col());
                             flipHistory.push(d); // הוסף את הדיסק להיסטוריית ההפיכות
                             discsFlipStackerCopy.push(pos); // שומר את המיקומים שהפכו
                             undoCount++; // עדכון מניין ההפיכות
@@ -265,7 +265,7 @@ public class GameLogic implements PlayableLogic {
      */
     @Override
     public Disc getDiscAtPosition(Position position) {
-        return boardDiscs[position.getRow()][position.getCol()];
+        return boardDiscs[position.row()][position.col()];
     }
     /**
      * @return The size of the board.
@@ -326,8 +326,8 @@ public class GameLogic implements PlayableLogic {
         int flipCounter = 0; // מונה את כמות ההפיכות
         ArrayList<Position> validFlips = new ArrayList<>();
         Stack<Position> flipPositionStack = new Stack<>();
-        int row = a.getRow() + rowDelta;
-        int col = a.getCol() + colDelta;
+        int row = a.row() + rowDelta;
+        int col = a.col() + colDelta;
         // סריקה בכיוון הנתון כל עוד אנחנו בתוך גבולות הלוח
         while (isWithinBoardBounds(row, col)) {
             Disc disc = boardDiscs[row][col];
@@ -337,7 +337,7 @@ public class GameLogic implements PlayableLogic {
                 flipCounter=0;
                 while (!validFlips.isEmpty()) {
                     Position position = validFlips.removeFirst();
-                    countedArr[position.getRow()][position.getCol()]=false;
+                    countedArr[position.row()][position.col()]=false;
                 }
                 break;
             }
@@ -409,8 +409,8 @@ public class GameLogic implements PlayableLogic {
             int colDelta = direction[1];
             // התעלם מהכיוון המרכזי שבו יש את הפצצה
 
-            int newRow = a.getRow() + rowDelta;
-            int newCol = a.getCol() + colDelta;
+            int newRow = a.row() + rowDelta;
+            int newCol = a.col() + colDelta;
 
             if (isWithinBoardBounds(newRow, newCol) && !(boardDiscs[newRow][newCol] == null) && !boardDiscs[newRow][newCol].getFlagBomb()) {
                 Disc currentDisc = boardDiscs[newRow][newCol];
@@ -529,17 +529,17 @@ public class GameLogic implements PlayableLogic {
         if (!moveHistory.isEmpty()) {
             // החזרת המיקום האחרון
             Position lastMove = moveHistory.pop();
-            Disc removedDisc = boardDiscs[lastMove.getRow()][lastMove.getCol()];
+            Disc removedDisc = boardDiscs[lastMove.row()][lastMove.col()];
             if (removedDisc.getType().equals("💣")) {
                 removedDisc.getOwner().increase_bomb();
             } else if (removedDisc.getType().equals("⭕")) {
                 removedDisc.getOwner().increase_unflippedable();
             }
-            boardDiscs[lastMove.getRow()][lastMove.getCol()] = null; // מסיר את הדיסק מהמיקום
+            boardDiscs[lastMove.row()][lastMove.col()] = null; // מסיר את הדיסק מהמיקום
             System.out.println("Undoing last move:");
             System.out.printf("\tUndo: removing %s from (%d, %d)\n",
                     removedDisc.getType(),
-                    lastMove.getRow(), lastMove.getCol());
+                    lastMove.row(), lastMove.col());
 
             if (!undoCountStack.isEmpty()) {
                 int flipsToUndo = undoCountStack.pop();
@@ -547,12 +547,12 @@ public class GameLogic implements PlayableLogic {
                 for (int i = 0; i < flipsToUndo; i++) {
                     if (!flipHistory.isEmpty()) {
                         Position flippedPos = discsFlipStackerCopy.pop();
-                        Disc flippedDisc = boardDiscs[flippedPos.getRow()][flippedPos.getCol()];
+                        Disc flippedDisc = boardDiscs[flippedPos.row()][flippedPos.col()];
                         // משחזר את הבעלות הקודמת
                         flippedDisc.setOwner(getCurrentPlayer());
                         System.out.printf("\tUndo: flipping back %s in (%d, %d)\n",
                                 flippedDisc.getType(),
-                                flippedPos.getRow(), flippedPos.getCol());
+                                flippedPos.row(), flippedPos.col());
                         System.out.println();
                     }
                 }

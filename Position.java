@@ -30,7 +30,7 @@ public class Position {
      *
      * @return The row index of the position (zero-based).
      */
-    public int getRow() {
+    public int row() {
         return this.row;
     }
     /**
@@ -38,7 +38,7 @@ public class Position {
      *
      * @return The column index of the position (zero-based).
      */
-    public int getCol() {
+    public int col() {
         return this.col;
     }
 
